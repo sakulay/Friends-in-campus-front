@@ -44,12 +44,26 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       port: +env.VITE_APP_PORT,
       open: true,
       proxy: {
+        // "/dev-api-upload": {
+        //   target: "http://111.230.102.82:40061",
+        //   changeOrigin: true,
+        //   rewrite: (path) => path.replace(/^\/dev-api-upload/, ""),
+        // },
         // 代理 /dev-api 的请求
         [env.VITE_APP_BASE_API]: {
           changeOrigin: true,
           // 代理目标地址：https://api.youlai.tech
           target: env.VITE_APP_API_URL,
           rewrite: (path) => path.replace(new RegExp("^" + env.VITE_APP_BASE_API), ""),
+        },
+        [env.VITE_PIC_BASE_API]: {
+          changeOrigin: true,
+          // 代理目标地址：http://111.230.102.82:40061
+          target: env.VITE_PIC_API_URL,
+          rewrite: (path) => {
+            console.log("Rewriting path:", path); // 调试
+            return path.replace(new RegExp("^" + env.VITE_PIC_BASE_API), ""); // 确保返回修改后的路径
+          },
         },
       },
     },

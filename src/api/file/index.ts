@@ -5,7 +5,7 @@ const FileAPI = {
    * 文件上传地址
    */
   uploadUrl: import.meta.env.VITE_APP_BASE_API + "/api/v1/files",
-
+  myUploadUrl: import.meta.env.VITE_PIC_BASE_API + "/api/index.php",
   /**
    * 上传文件
    *

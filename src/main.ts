@@ -17,3 +17,4 @@ app.use(setupPlugins);
 app.mount("#app");
 console.log(import.meta.env.VITE_APP_BASE_API);
 console.log(import.meta.env.VITE_APP_API_URL);
+console.log(import.meta.env.VITE_PIC_API_URL);

@@ -89,7 +89,7 @@ const onlyOneChild = ref();
 
 onMounted(() => {
   // 打印父组件传过来的 item 数据
-  console.log("父组件传过来的 item:", props.item);
+  // console.log("父组件传过来的 item:", props.item);
 });
 
 /**

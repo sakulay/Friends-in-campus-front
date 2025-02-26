@@ -47,30 +47,27 @@
           key="studentId"
           label="学号"
           prop="studentId"
-          min-width="150"
+          min-width="100"
           align="center"
         />
-        <el-table-column
-          key="password"
-          label="用户密码"
-          prop="password"
-          min-width="150"
-          align="center"
-        />
-        <el-table-column
-          key="authStatus"
-          label="认证状态(0-未认证，1-已认证)"
-          prop="authStatus"
-          min-width="150"
-          align="center"
-        />
-        <el-table-column
-          key="authInfo"
-          label="认证信息"
-          prop="authInfo"
-          min-width="150"
-          align="center"
-        />
+
+        <el-table-column key="authInfo" label="认证信息" prop="authInfo" align="center">
+          <template #default="scope">
+            <div class="center-content">
+              <ImageUpload
+                :id="Number(scope.row.studentId)"
+                v-model="scope.row.authInfo"
+                :limit="1"
+                :maxSize="10"
+                :updateMethod="AppUserAPI.update"
+                :getFormData="AppUserAPI.getFormData"
+                :fieldNames="fieldNames"
+                :deleteUrl="scope.row.deleteUrl"
+              />
+            </div>
+          </template>
+        </el-table-column>
+
         <el-table-column
           key="createTime"
           label="创建时间"
@@ -85,6 +82,13 @@
           min-width="150"
           align="center"
         />
+        <el-table-column label="状态" align="center" prop="authStatus" width="90">
+          <template #default="scope">
+            <el-tag :type="scope.row.authStatus == 1 ? 'success' : 'danger'">
+              {{ scope.row.authStatus == 1 ? "已认证" : "未认证" }}
+            </el-tag>
+          </template>
+        </el-table-column>
         <el-table-column fixed="right" label="操作" width="220">
           <template #default="scope">
             <el-button
@@ -136,12 +140,30 @@
           <el-input v-model="formData.password" placeholder="用户密码" />
         </el-form-item>
 
-        <el-form-item label="认证状态" prop="authStatus">
+        <el-form-item v-if="type" label="认证状态" prop="authStatus">
           <el-input v-model="formData.authStatus" placeholder="认证状态(0-未认证，1-已认证)" />
         </el-form-item>
-
-        <el-form-item label="认证信息" prop="authInfo">
-          <el-input v-model="formData.authInfo" placeholder="认证信息" />
+        <el-form-item key="authInfo" label="认证信息" prop="authInfo" align="center">
+          <!-- <template #default="scope"> -->
+          <el-upload
+            class="avatar-uploader"
+            :action="FileAPI.myUploadUrl"
+            name="image"
+            :data="{ token: '1c17b11693cb5ec63859b091c5b9c1b2' }"
+            list-type="picture-card"
+            :on-success="handleAvatarSuccess"
+            :before-upload="beforeAvatarUpload"
+            :on-preview="handlePictureCardPreview"
+            :on-remove="handleRemove"
+          >
+            <!-- <img v-if="imageUrl" :src="imageUrl" class="avatar" /> -->
+            <!-- <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon> -->
+            <el-icon><Plus /></el-icon>
+          </el-upload>
+          <el-dialog v-model="dialogVisible">
+            <img w-full :src="imageUrl" alt="Preview Image" />
+          </el-dialog>
+          <!-- </template> -->
         </el-form-item>
       </el-form>
       <template #footer>
@@ -162,12 +184,12 @@ defineOptions({
 
 import AppUserAPI, { AppUserPageVO, AppUserForm, AppUserPageQuery } from "@/api/app/app-user";
 import AuthAPI from "@/api/auth";
-import { log } from "console";
-import { fdatasync } from "fs";
+import { UploadProps } from "element-plus";
+import FileAPI from "@/api/file";
+import axios from "axios";
 
 const queryFormRef = ref(ElForm);
 const dataFormRef = ref(ElForm);
-
 const loading = ref(false);
 const removeIds = ref<number[]>([]);
 const total = ref(0);
@@ -189,13 +211,17 @@ const dialog = reactive({
 
 // app_user ，存储用户的基本信息及认证信息表单数据
 const formData = reactive<AppUserForm>({});
-
 // app_user ，存储用户的基本信息及认证信息表单校验规则
 const rules = reactive({
   studentId: [{ required: true, message: "请输入学号，唯一标识", trigger: "blur" }],
   password: [{ required: true, message: "请输入用户密码", trigger: "blur" }],
   authInfo: [{ required: true, message: "请输入认证信息（如认证图片的URL）", trigger: "blur" }],
 });
+const fieldNames = ref(["authInfo", "deleteUrl"]);
+const imageUrl = ref("");
+const deleteUrl = ref("");
+// 图片预览器可视化与否
+const dialogVisible = ref(false);
 
 /** 查询app_user ，存储用户的基本信息及认证信息 */
 function handleQuery() {
@@ -272,6 +298,15 @@ function handleCloseDialog() {
   dataFormRef.value.resetFields();
   dataFormRef.value.clearValidate();
   formData.studentId = undefined;
+  if (deleteUrl.value) {
+    axios
+      .get(
+        deleteUrl.value.replace(import.meta.env.VITE_PIC_API_URL, import.meta.env.VITE_PIC_BASE_API)
+      )
+      .then(() => {
+        console.log("已清空图片");
+      });
+  }
 }
 
 /** 删除app_user ，存储用户的基本信息及认证信息 */
@@ -301,8 +336,75 @@ function handleDelete(id?: number) {
     }
   );
 }
-
+/** authInfo图片添加*/
+const handleAvatarSuccess: UploadProps["onSuccess"] = (response, uploadFile) => {
+  imageUrl.value = response.url;
+  deleteUrl.value = response.del;
+};
+/** 验证文件是否为图片*/
+const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
+  // if (rawFile.type !== "image/jpeg/png/") {
+  //   ElMessage.error("图片格式必须是JPG/png格式!");
+  //   return false;
+  // } else if (rawFile.size / 1024 / 1024 > 2) {
+  //   ElMessage.error("图片大小不能超过2MB!");
+  //   return false;
+  // }
+  // return true;
+};
+const handlePictureCardPreview: UploadProps["onPreview"] = (uploadFile) => {
+  imageUrl.value = uploadFile.url!;
+  dialogVisible.value = true;
+};
+/** 删除图片*/
+const handleRemove = () => {
+  if (deleteUrl.value) {
+    axios
+      .get(
+        deleteUrl.value.replace(import.meta.env.VITE_PIC_API_URL, import.meta.env.VITE_PIC_BASE_API)
+      )
+      .then((res) => {
+        console.log("已清空图片");
+      });
+  }
+};
 onMounted(() => {
   handleQuery();
 });
 </script>
+
+<style lang="scss" scoped>
+.center-content {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%; // 让它充满 `el-table-column`
+}
+
+.avatar-uploader .avatar {
+  display: block;
+  width: 178px;
+  height: 178px;
+}
+
+.avatar-uploader .el-upload {
+  position: relative;
+  overflow: hidden;
+  cursor: pointer;
+  border: 1px dashed var(--el-border-color);
+  border-radius: 6px;
+  transition: var(--el-transition-duration-fast);
+}
+
+.avatar-uploader .el-upload:hover {
+  border-color: var(--el-color-primary);
+}
+
+.el-icon.avatar-uploader-icon {
+  width: 178px;
+  height: 178px;
+  font-size: 28px;
+  color: #8c939d;
+  text-align: center;
+}
+</style>

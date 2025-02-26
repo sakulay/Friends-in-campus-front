@@ -37,11 +37,11 @@ export function setupPermission() {
             const dynamicRoutes = await permissionStore.generateRoutes();
             // console.log("路由：" + dynamicRoutes);
             dynamicRoutes.forEach((route: RouteRecordRaw, index: number) => {
-              console.log(index);
-              console.dir(route, { depth: null }); // depth: null 表示不限制打印的深度
+              // console.log(index);
+              // console.dir(route, { depth: null }); // depth: null 表示不限制打印的深度
               router.addRoute(route);
             });
-            console.dir(permissionStore.routes);
+            // console.dir(permissionStore.routes);
             next({ ...to, replace: true });
           } catch (error) {
             console.error(error);

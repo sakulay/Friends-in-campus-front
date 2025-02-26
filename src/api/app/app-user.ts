@@ -1,16 +1,16 @@
 import request from "@/utils/request";
 
 const APPUSER_BASE_URL = "/api/v1/appUsers";
-const allowedFields: (keyof AppUserForm)[] = ["studentId", "password", "authStatus", "authInfo"];
+// const allowedFields: (keyof AppUserForm)[] = ["studentId", "password", "authStatus", "authInfo"];
 
-function filterObject<T extends Record<string, any>>(
-  obj: T,
-  allowedFields: (keyof T)[]
-): Partial<T> {
-  return Object.fromEntries(
-    Object.entries(obj).filter(([key]) => allowedFields.includes(key as keyof T))
-  ) as Partial<T>;
-}
+// function filterObject<T extends Record<string, any>>(
+//   obj: T,
+//   allowedFields: (keyof T)[]
+// ): Partial<T> {
+//   return Object.fromEntries(
+//     Object.entries(obj).filter(([key]) => allowedFields.includes(key as keyof T))
+//   ) as Partial<T>;
+// }
 
 const AppUserAPI = {
   /** 获取app_user ，存储用户的基本信息及认证信息分页数据 */
@@ -39,7 +39,7 @@ const AppUserAPI = {
     return request({
       url: `${APPUSER_BASE_URL}`,
       method: "post",
-      data: filterObject(data, allowedFields),
+      data: data,
     });
   },
 
@@ -50,10 +50,11 @@ const AppUserAPI = {
    * @param data app_user ，存储用户的基本信息及认证信息表单数据
    */
   update(id: number, data: AppUserForm) {
+    // console.log("update data: " + JSON.stringify(data));
     return request({
       url: `${APPUSER_BASE_URL}/${id}`,
       method: "put",
-      data: filterObject(data, allowedFields),
+      data: data,
     });
   },
 
@@ -85,14 +86,8 @@ export interface AppUserForm {
   authStatus?: number;
   /** 认证信息（如认证图片的URL） */
   authInfo?: string;
-  /** 创建时间 */
-  createTime?: Date;
-  /** 创建人ID */
-  createBy?: number;
-  /** 更新时间 */
-  updateTime?: Date;
-  /** 修改人ID */
-  updateBy?: number;
+  /** 图片删除api */
+  deleteUrl?: string;
 }
 
 /** app_user ，存储用户的基本信息及认证信息分页对象 */

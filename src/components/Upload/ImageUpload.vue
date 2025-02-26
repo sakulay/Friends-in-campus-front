@@ -5,6 +5,7 @@
     <el-upload
       ref="uploadRef"
       v-model:file-list="fileList"
+      v-loading="loading"
       :before-upload="handleBeforeUpload"
       :action="props.action"
       :headers="props.headers"
@@ -56,10 +57,15 @@ import { UploadRawFile, UploadUserFile, UploadFile } from "element-plus";
 import FileAPI from "@/api/file";
 import { getToken } from "@/utils/auth";
 import { ResultEnum } from "@/enums/ResultEnum";
+import axios from "axios";
 
 const emit = defineEmits(["update:modelValue", "change"]);
 
 const props = defineProps({
+  id: {
+    type: Number,
+    default: 0,
+  },
   /**
    * 文件路径集合
    */
@@ -72,7 +78,29 @@ const props = defineProps({
    */
   action: {
     type: String,
-    default: FileAPI.uploadUrl,
+    default: FileAPI.myUploadUrl,
+  },
+  /**
+   * 更新图片方法
+   */
+  updateMethod: {
+    type: Function as PropType<(id: number, data: Record<string, any>) => Promise<any>>,
+    default: () => Promise.resolve(),
+  },
+  getFormData: {
+    type: Function as PropType<(id: number) => Promise<any>>,
+    default: () => Promise.resolve(),
+  },
+  fieldNames: {
+    type: Array<string>,
+    default: ["avatar", "deleteUrl"],
+  },
+  /**
+   * 图片删除
+   */
+  deleteUrl: {
+    type: String,
+    default: "",
   },
   /**
    * 请求头
@@ -90,16 +118,17 @@ const props = defineProps({
    */
   data: {
     type: Object,
-    default: () => {
-      return {};
-    },
+    // default: () => {
+    //   return {};
+    // },
+    default: { token: "1c17b11693cb5ec63859b091c5b9c1b2" },
   },
   /**
    * 上传文件的参数名
    */
   name: {
     type: String,
-    default: "file",
+    default: "image",
   },
   /**
    * 文件上传数量限制
@@ -164,13 +193,21 @@ const initialIndex = ref(0);
 const fileList = ref([] as UploadUserFile[]);
 const valFileList = ref([] as string[]);
 const viewFileList = ref([] as string[]);
-
+// const formData = ref({ avatar: "", deleteUrl: "" });
+const formData = ref<Record<string, any>>({});
 // 添加一个ref来引用el-upload组件
 const uploadRef = ref();
-
+const loading = ref(false);
 watch(
   () => props.modelValue,
   (newVal) => {
+    // 先确保 newVal 不是 null 或 undefined
+    if (!newVal) {
+      fileList.value = [];
+      viewFileList.value = [];
+      valFileList.value = [];
+      return;
+    }
     if (typeof newVal === "string" && !newVal) {
       fileList.value = [];
       viewFileList.value = [];
@@ -210,19 +247,47 @@ watch(
  * @param options
  */
 const handleSuccessFile = (response: any, file: UploadFile) => {
-  if (response.code === ResultEnum.SUCCESS) {
-    ElMessage.success("上传成功");
-    valFileList.value.push(response.data.url);
-    if (props.limit === 1) {
-      emit("update:modelValue", response.data.url);
-      emit("change", response.data.url);
-    } else {
-      emit("update:modelValue", valFileList.value);
-      emit("change", valFileList.value);
-    }
-    return;
+  console.log(response);
+  if (response.code === ResultEnum.SUCCESS_PIC) {
+    // 调用更新接口，保存图片到数据库
+    // formData.value.avatar = response.url;
+    // formData.value.deleteUrl = response.del;
+    formData.value[props.fieldNames[0]] = response.url;
+    formData.value[props.fieldNames[1]] = response.del;
+    props
+      .updateMethod(props.id, formData.value)
+      .then(() => {
+        ElMessage.success("上传成功");
+        valFileList.value.push(response.url);
+        if (props.limit === 1) {
+          emit("update:modelValue", response.url);
+          emit("change", response.url);
+        } else {
+          emit("update:modelValue", valFileList.value);
+          emit("change", valFileList.value);
+        }
+        return;
+      })
+      .catch(() => {
+        // 存入数据库失败，则把图床的图片删除
+        ElMessage.error("上传失败");
+        axios
+          .get(
+            response.del.replace(
+              import.meta.env.VITE_PIC_API_URL,
+              import.meta.env.VITE_PIC_BASE_API
+            )
+          )
+          .then(() => {
+            console.log("已删除：" + response.del);
+          });
+      })
+      .finally(() => {
+        loading.value = false;
+      });
   } else {
-    ElMessage.error(response.msg || "上传失败");
+    ElMessage.error(response.message || "上传失败");
+    loading.value = false;
   }
 };
 
@@ -233,19 +298,47 @@ const handleError = (error: any) => {
 /**
  * 删除图片
  */
-function handleRemove(path: string) {
-  if (path) {
-    FileAPI.deleteByPath(path).then(() => {
-      valFileList.value = valFileList.value.filter((x) => x !== path);
-      // 删除成功回调
-      if (props.limit === 1) {
-        emit("update:modelValue", "");
-        emit("change", "");
-      } else {
-        emit("update:modelValue", valFileList.value);
-        emit("change", valFileList.value);
-      }
-    });
+async function handleRemove(path: string) {
+  if (!path) return;
+
+  try {
+    await ElMessageBox.confirm("确定删除该文件？");
+
+    loading.value = true;
+    // console.log(props.deleteUrl);
+    // console.log(
+    //   props.deleteUrl.replace(import.meta.env.VITE_PIC_API_URL, import.meta.env.VITE_PIC_BASE_API)
+    // );
+    // 先调用 updateMethod 清除数据库中的 avatar 和 deleteUrl
+    const res = await props.getFormData(props.id);
+    formData.value = res;
+    console.log(formData.value);
+    formData.value[props.fieldNames[0]] = "";
+    formData.value[props.fieldNames[1]] = "";
+    console.log(formData.value);
+    await props.updateMethod(props.id, formData);
+
+    // 更新前端显示
+    valFileList.value = valFileList.value.filter((x) => x !== path);
+    if (props.limit === 1) {
+      emit("update:modelValue", "");
+      emit("change", "");
+    } else {
+      emit("update:modelValue", valFileList.value);
+      emit("change", valFileList.value);
+    }
+
+    // 再调用图床 API 删除图片
+    await axios.get(
+      props.deleteUrl.replace(import.meta.env.VITE_PIC_API_URL, import.meta.env.VITE_PIC_BASE_API)
+    );
+
+    ElMessage.success("图片删除成功");
+  } catch (error) {
+    console.error("删除失败", error);
+    ElMessage.error("删除失败");
+  } finally {
+    loading.value = false;
   }
 }
 
@@ -253,6 +346,7 @@ function handleRemove(path: string) {
  * 限制用户上传文件的格式和大小
  */
 function handleBeforeUpload(file: UploadRawFile) {
+  loading.value = true;
   // 限制文件大小
   if (file.size > props.maxSize * 1024 * 1024) {
     ElMessage.warning("上传图片不能大于" + props.maxSize + "M");
@@ -308,6 +402,7 @@ const triggerUpload = () => {
   }
 };
 </script>
+
 <style lang="scss" scoped>
 .custom-upload-list {
   display: flex;
@@ -320,6 +415,7 @@ const triggerUpload = () => {
   width: v-bind("props.style.width");
   height: v-bind("props.style.height");
   overflow: hidden;
+  text-align: center;
   border-radius: 6px;
 
   .upload-thumbnail {
