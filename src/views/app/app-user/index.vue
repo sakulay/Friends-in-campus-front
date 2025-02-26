@@ -111,6 +111,18 @@
               <template #icon><Delete /></template>
               删除
             </el-button>
+            <el-button
+              type="primary"
+              size="small"
+              link
+              :disabled="scope.row.authStatus == 1"
+              @click="handleVerify(scope.row.studentId)"
+            >
+              <template #icon>
+                <Select />
+              </template>
+              审核
+            </el-button>
           </template>
         </el-table-column>
       </el-table>
@@ -129,7 +141,7 @@
       v-model="dialog.visible"
       :title="dialog.title"
       width="500px"
-      @close="handleCloseDialog"
+      @close="handleCloseDialog(true)"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
         <el-form-item label="学号" prop="studentId">
@@ -146,19 +158,20 @@
         <el-form-item key="authInfo" label="认证信息" prop="authInfo" align="center">
           <!-- <template #default="scope"> -->
           <el-upload
+            ref="uploadRef"
+            v-model="fileList"
             class="avatar-uploader"
             :action="FileAPI.myUploadUrl"
             name="image"
             :data="{ token: '1c17b11693cb5ec63859b091c5b9c1b2' }"
-            list-type="picture-card"
+            :show-file-list="true"
             :on-success="handleAvatarSuccess"
             :before-upload="beforeAvatarUpload"
             :on-preview="handlePictureCardPreview"
             :on-remove="handleRemove"
           >
-            <!-- <img v-if="imageUrl" :src="imageUrl" class="avatar" /> -->
-            <!-- <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon> -->
-            <el-icon><Plus /></el-icon>
+            <img v-if="imageUrl" :src="imageUrl" class="avatar" />
+            <el-icon v-else class="avatar-uploader-icon"><Plus /></el-icon>
           </el-upload>
           <el-dialog v-model="dialogVisible">
             <img w-full :src="imageUrl" alt="Preview Image" />
@@ -169,7 +182,7 @@
       <template #footer>
         <div class="dialog-footer">
           <el-button type="primary" @click="handleSubmit()">确定</el-button>
-          <el-button @click="handleCloseDialog()">取消</el-button>
+          <el-button @click="handleCloseDialog(true)">取消</el-button>
         </div>
       </template>
     </el-dialog>
@@ -217,7 +230,9 @@ const rules = reactive({
   password: [{ required: true, message: "请输入用户密码", trigger: "blur" }],
   authInfo: [{ required: true, message: "请输入认证信息（如认证图片的URL）", trigger: "blur" }],
 });
+const uploadRef = ref();
 const fieldNames = ref(["authInfo", "deleteUrl"]);
+const fileList = ref([]);
 const imageUrl = ref("");
 const deleteUrl = ref("");
 // 图片预览器可视化与否
@@ -261,7 +276,6 @@ function handleOpenDialog(id?: number) {
     type.value = false;
     dialog.title = "新增app_user";
   }
-  console.dir(formData);
 }
 
 /** 提交app_user ，存储用户的基本信息及认证信息表单 */
@@ -293,20 +307,19 @@ function handleSubmit() {
 }
 
 /** 关闭app_user ，存储用户的基本信息及认证信息弹窗 */
-function handleCloseDialog() {
+function handleCloseDialog(isDeleted?: boolean) {
   dialog.visible = false;
   dataFormRef.value.resetFields();
   dataFormRef.value.clearValidate();
   formData.studentId = undefined;
-  if (deleteUrl.value) {
-    axios
-      .get(
-        deleteUrl.value.replace(import.meta.env.VITE_PIC_API_URL, import.meta.env.VITE_PIC_BASE_API)
-      )
-      .then(() => {
-        console.log("已清空图片");
-      });
+  if (isDeleted) {
+    handleRemove();
   }
+  // 清空imageUrl、deleteUrl、上传列表
+  console.log("清空imageUrl、deleteUrl、上传列表");
+  imageUrl.value = "";
+  deleteUrl.value = "";
+  uploadRef.value.clearFiles();
 }
 
 /** 删除app_user ，存储用户的基本信息及认证信息 */
@@ -336,10 +349,33 @@ function handleDelete(id?: number) {
     }
   );
 }
+/** 审核学生 */
+function handleVerify(id: number) {
+  ElMessageBox.confirm("确认审核已选中的学生用户?", "警告", {
+    confirmButtonText: "确定",
+    cancelButtonText: "取消",
+    type: "warning",
+  }).then(
+    () => {
+      loading.value = true;
+      AppUserAPI.verify(id)
+        .then(() => {
+          ElMessage.success("审核成功");
+          handleResetQuery();
+        })
+        .finally(() => (loading.value = false));
+    },
+    () => {
+      ElMessage.info("已取消审核");
+    }
+  );
+}
 /** authInfo图片添加*/
 const handleAvatarSuccess: UploadProps["onSuccess"] = (response, uploadFile) => {
   imageUrl.value = response.url;
   deleteUrl.value = response.del;
+  formData.deleteUrl = response.del;
+  formData.authInfo = response.url;
 };
 /** 验证文件是否为图片*/
 const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
@@ -352,6 +388,7 @@ const beforeAvatarUpload: UploadProps["beforeUpload"] = (rawFile) => {
   // }
   // return true;
 };
+/** 处理图片预览 */
 const handlePictureCardPreview: UploadProps["onPreview"] = (uploadFile) => {
   imageUrl.value = uploadFile.url!;
   dialogVisible.value = true;
@@ -364,7 +401,10 @@ const handleRemove = () => {
         deleteUrl.value.replace(import.meta.env.VITE_PIC_API_URL, import.meta.env.VITE_PIC_BASE_API)
       )
       .then((res) => {
-        console.log("已清空图片");
+        console.log("已清空图片" + JSON.stringify(res));
+        imageUrl.value = "";
+        deleteUrl.value = "";
+        uploadRef.value.clearFiles();
       });
   }
 };
@@ -385,6 +425,7 @@ onMounted(() => {
   display: block;
   width: 178px;
   height: 178px;
+  border: 1px;
 }
 
 .avatar-uploader .el-upload {

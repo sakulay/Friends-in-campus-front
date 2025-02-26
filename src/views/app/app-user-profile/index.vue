@@ -85,7 +85,7 @@
         <el-table-column label="状态" align="center" prop="isDeleted" width="80">
           <template #default="scope">
             <el-tag :type="scope.row.isDeleted == 0 ? 'success' : 'danger'">
-              {{ scope.row.isDeleted == 1 ? "正常" : "禁用" }}
+              {{ scope.row.isDeleted == 0 ? "正常" : "禁用" }}
             </el-tag>
           </template>
         </el-table-column>
@@ -181,7 +181,7 @@ import AppUserProfileAPI, {
 const queryFormRef = ref(ElForm);
 const dataFormRef = ref(ElForm);
 // const picUrl = ref("https://s2.loli.net/2023/05/24/yNsxFC8rLHMZQcK.jpg");
-const picUrl = ref("");
+
 const loading = ref(false);
 const removeIds = ref<number[]>([]);
 const total = ref(0);

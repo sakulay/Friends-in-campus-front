@@ -69,6 +69,13 @@ const AppUserAPI = {
       method: "delete",
     });
   },
+
+  verify(studentId: number) {
+    return request({
+      url: `${APPUSER_BASE_URL}/verify/${studentId}`,
+      method: "put",
+    });
+  },
 };
 
 export default AppUserAPI;
