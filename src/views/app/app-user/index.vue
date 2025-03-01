@@ -84,7 +84,7 @@
         />
         <el-table-column label="状态" align="center" prop="authStatus" width="90">
           <template #default="scope">
-            <el-tag :type="scope.row.authStatus == 1 ? 'success' : 'danger'">
+            <el-tag :type="scope.row.authStatus == 1 ? 'success' : 'warning'">
               {{ scope.row.authStatus == 1 ? "已认证" : "未认证" }}
             </el-tag>
           </template>
