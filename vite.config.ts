@@ -44,11 +44,6 @@ export default defineConfig(({ mode }: ConfigEnv): UserConfig => {
       port: +env.VITE_APP_PORT,
       open: true,
       proxy: {
-        // "/dev-api-upload": {
-        //   target: "http://111.230.102.82:40061",
-        //   changeOrigin: true,
-        //   rewrite: (path) => path.replace(/^\/dev-api-upload/, ""),
-        // },
         // 代理 /dev-api 的请求
         [env.VITE_APP_BASE_API]: {
           changeOrigin: true,

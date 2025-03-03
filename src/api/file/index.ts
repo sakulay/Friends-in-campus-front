@@ -6,6 +6,8 @@ const FileAPI = {
    */
   uploadUrl: import.meta.env.VITE_APP_BASE_API + "/api/v1/files",
   myUploadUrl: import.meta.env.VITE_PIC_BASE_API + "/api/index.php",
+  data: { token: "1c17b11693cb5ec63859b091c5b9c1b2" },
+  name: "image",
   /**
    * 上传文件
    *
