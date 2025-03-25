@@ -147,17 +147,12 @@
               <template #icon><Delete /></template>
               删除
             </el-button>
-            <el-button
-              type="primary"
-              size="small"
-              link
-              :disabled="!(scope.row.status == 0)"
-              @click="viewDetails(scope.row)"
-            >
+            <!-- :disabled="!(scope.row.status == 0)" -->
+            <el-button type="primary" size="small" link @click="viewDetails(scope.row)">
               <template #icon>
-                <Select />
+                <View />
               </template>
-              审核
+              查看
             </el-button>
           </template>
         </el-table-column>
@@ -229,7 +224,7 @@
     <el-dialog
       v-model="dialogVisible"
       width="1000px"
-      style="padding: 0px 35px 20px 35px; margin-top: 10px; margin-bottom: 10px"
+      style="padding: 0 35px 20px; margin-top: 10px; margin-bottom: 10px"
     >
       <div class="post-header">
         <h2>{{ selectedPost?.title }}</h2>
@@ -272,7 +267,6 @@
         <el-button type="danger" @click="handleVerify(2, selectedPost.id)">拒绝</el-button>
         <el-button type="primary" @click="dialogVisible = false">关闭</el-button>
       </template>
-      {{ selectedPost }}
     </el-dialog>
   </div>
 </template>
@@ -293,6 +287,7 @@ import AppPostAPI, {
 } from "@/api/app/app-post";
 import axios from "axios";
 import { dayjs } from "element-plus";
+// import { View } from "@element-plus/icons-vue/dist/types";
 
 const queryFormRef = ref(ElForm);
 const dataFormRef = ref(ElForm);
@@ -590,14 +585,14 @@ onMounted(() => {
 
 <style scoped>
 .carousel-item {
-  margin: 0 0;
-  width: 100%;
   display: flex;
-  justify-content: center;
   align-items: center;
+  justify-content: center;
+  width: 100%;
+  margin: 0;
+  overflow: hidden; /* 隐藏溢出部分 */
   background-color: #f0f0f0; /* 背景颜色 */
   border-radius: 8px; /* 圆角 */
-  overflow: hidden; /* 隐藏溢出部分 */
 }
 
 .carousel-image {
@@ -605,24 +600,26 @@ onMounted(() => {
   height: 100%;
   object-fit: contain; /* 保持图片比例并完全显示 */
 }
+
 .post-header {
   margin-bottom: 20px;
 }
 
 .post-meta p {
   margin: 5px 0;
-  color: #606266;
   font-family: Arial, sans-serif;
   font-size: 13px;
+  color: #606266;
 }
 
 .post-content {
   margin-bottom: 20px;
 }
+
 .post-content p {
   margin: 5px 0;
-  color: #606266;
   font-family: Arial, sans-serif;
   font-size: 17px;
+  color: #606266;
 }
 </style>

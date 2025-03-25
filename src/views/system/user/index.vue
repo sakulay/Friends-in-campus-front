@@ -3,9 +3,9 @@
   <div class="app-container">
     <el-row :gutter="20">
       <!-- 部门树 -->
-      <el-col :lg="4" :xs="24" class="mb-[12px]">
+      <!-- <el-col :lg="4" :xs="24" class="mb-[12px]">
         <DeptTree v-model="queryParams.deptId" @node-click="handleQuery" />
-      </el-col>
+      </el-col> -->
 
       <!-- 用户列表 -->
       <el-col :lg="20" :xs="24">
@@ -99,7 +99,7 @@
                 <DictLabel v-model="scope.row.gender" code="gender" />
               </template>
             </el-table-column>
-            <el-table-column label="部门" width="120" align="center" prop="deptName" />
+            <!-- <el-table-column label="部门" width="120" align="center" prop="deptName" /> -->
             <el-table-column label="手机号码" align="center" prop="mobile" width="120" />
             <el-table-column label="状态" align="center" prop="status" width="80">
               <template #default="scope">

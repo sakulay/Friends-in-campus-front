@@ -113,7 +113,7 @@ interface MessageType {
 
 const messages = ref<MessageType[]>([]);
 
-const topicMessage = ref("亲爱的大冤种们，由于一只史诗级的BUG，系统版本已经被迫回退到了0.0.1。"); // 广播消息
+const topicMessage = ref("大家好！"); // 广播消息
 
 const queneMessage = ref(
   "hi , " + receiver.value + " , 我是" + userStore.userInfo.username + " , 想和你交个朋友 ! "
