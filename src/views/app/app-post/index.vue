@@ -148,11 +148,17 @@
               删除
             </el-button>
             <!-- :disabled="!(scope.row.status == 0)" -->
-            <el-button type="primary" size="small" link @click="viewDetails(scope.row)">
+            <el-button
+              type="primary"
+              size="small"
+              link
+              :disabled="!(scope.row.status == 0)"
+              @click="viewDetails(scope.row)"
+            >
               <template #icon>
-                <View />
+                <Select />
               </template>
-              查看
+              审核
             </el-button>
           </template>
         </el-table-column>
@@ -287,6 +293,7 @@ import AppPostAPI, {
 } from "@/api/app/app-post";
 import axios from "axios";
 import { dayjs } from "element-plus";
+import { json } from "stream/consumers";
 // import { View } from "@element-plus/icons-vue/dist/types";
 
 const queryFormRef = ref(ElForm);
@@ -342,6 +349,7 @@ function handleQuery() {
   loading.value = true;
   AppPostAPI.getPage(queryParams)
     .then((data) => {
+      // console.log(JSON.stringify(data));
       pageData.value = data.list;
       total.value = data.total;
     })

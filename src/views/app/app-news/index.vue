@@ -17,16 +17,12 @@
 
     <el-card shadow="never">
       <div class="mb-10px">
-        <el-button
-          v-hasPerm="['app:appUserProfile:add']"
-          type="success"
-          @click="handleOpenDialog()"
-        >
+        <el-button v-hasPerm="['app:appNews:add']" type="success" @click="handleOpenDialog()">
           <template #icon><Plus /></template>
           新增
         </el-button>
         <el-button
-          v-hasPerm="['app:appUserProfile:delete']"
+          v-hasPerm="['app:appNews:delete']"
           type="danger"
           :disabled="removeIds.length === 0"
           @click="handleDelete()"
@@ -45,65 +41,26 @@
         @selection-change="handleSelectionChange"
       >
         <el-table-column type="selection" width="55" align="center" />
-        <el-table-column key="id" label="个人信息ID" prop="id" min-width="100" align="center" />
-        <el-table-column
-          key="studentId"
-          label="学号"
-          prop="studentId"
-          min-width="150"
-          align="center"
-        />
-        <el-table-column
-          key="nickname"
-          label="用户昵称"
-          prop="nickname"
-          min-width="150"
-          align="center"
-        />
-        <el-table-column key="avatar" label="用户头像" prop="avatar" min-width="150" align="center">
-          <template #default="scope">
-            <div class="center-content">
-              <ImageUpload
-                :id="scope.row.id"
-                v-model="scope.row.avatar"
-                :limit="1"
-                :maxSize="10"
-                :updateMethod="AppUserProfileAPI.update"
-                :deleteUrl="scope.row.deleteUrl"
-              />
-            </div>
+        <el-table-column key="id" label="id" prop="id" min-width="60" align="center" />
+        <el-table-column key="date" label="发布日期" prop="date" min-width="80" align="center" />
+        <el-table-column key="title" label="标题" prop="title" min-width="150" align="center" />
+        <!-- <el-table-column key="content" label="内容" prop="content" min-width="250" align="center">
+          <template #default="{ row }">
+            <span>
+              {{ row.content.length > 30 ? row.content.slice(0, 40) + "..." : row.title }}
+            </span>
           </template>
-        </el-table-column>
-        <!-- <el-table-column
-          key="gender"
-          label="性别(0-男，1-女)"
-          prop="gender"
-          min-width="150"
-          align="center"
-        /> -->
-        <el-table-column key="bio" label="个人简介" prop="bio" min-width="150" align="center" />
-        <el-table-column label="状态" align="center" prop="isDeleted" width="80">
-          <template #default="scope">
-            <el-tag :type="scope.row.isDeleted == 0 ? 'success' : 'danger'">
-              {{ scope.row.isDeleted == 0 ? "正常" : "禁用" }}
-            </el-tag>
-          </template>
-        </el-table-column>
-
-        <el-table-column fixed="right" label="操作" width="220">
-          <template #default="scope">
-            <el-button
-              v-hasPerm="['app:appUserProfile:edit']"
-              type="primary"
-              size="small"
-              link
-              @click="handleOpenDialog(scope.row.id)"
-            >
-              <template #icon><Edit /></template>
-              编辑
+        </el-table-column> -->
+        <el-table-column fixed="right" label="操作" width="220" align="center">
+          <template #default="scope" align="center">
+            <el-button type="primary" size="small" link @click="viewDetails(scope.row)">
+              <template #icon>
+                <Select />
+              </template>
+              查看
             </el-button>
             <el-button
-              v-hasPerm="['app:appUserProfile:delete']"
+              v-hasPerm="['app:appNews:delete']"
               type="danger"
               size="small"
               link
@@ -125,7 +82,7 @@
       />
     </el-card>
 
-    <!-- 用户个人信息表单弹窗 -->
+    <!-- 校园新闻资讯表单弹窗 -->
     <el-dialog
       v-model="dialog.visible"
       :title="dialog.title"
@@ -133,27 +90,20 @@
       @close="handleCloseDialog"
     >
       <el-form ref="dataFormRef" :model="formData" :rules="rules" label-width="100px">
-        <el-form-item label="学号" prop="studentId">
-          <el-input v-model="formData.studentId" placeholder="学号，关联到 app_user 表的学号" />
+        <el-form-item label="" prop="id">
+          <el-input v-model="formData.id" placeholder="" />
         </el-form-item>
 
-        <el-form-item label="用户昵称" prop="nickname">
-          <el-input v-model="formData.nickname" placeholder="用户昵称" />
+        <el-form-item label="" prop="title">
+          <el-input v-model="formData.title" placeholder="" />
         </el-form-item>
 
-        <el-form-item label="用户头像" prop="avatar">
-          <el-input v-model="formData.avatar" placeholder="用户头像URL" />
+        <el-form-item label="" prop="date">
+          <el-input v-model="formData.date" placeholder="" />
         </el-form-item>
 
-        <el-form-item label="性别" prop="gender">
-          <el-input v-model="formData.gender" placeholder="性别(0-男，1-女)" />
-        </el-form-item>
-
-        <el-form-item label="个人简介" prop="bio">
-          <el-input v-model="formData.bio" placeholder="个人简介" />
-        </el-form-item>
-        <el-form-item v-if="type" label="是否删除（1-删除，0-未删除）" prop="isDeleted">
-          <el-input v-model="formData.isDeleted" placeholder="是否删除（1-删除，0-未删除）" />
+        <el-form-item label="" prop="content">
+          <el-input v-model="formData.content" placeholder="" />
         </el-form-item>
       </el-form>
       <template #footer>
@@ -163,56 +113,98 @@
         </div>
       </template>
     </el-dialog>
+
+    <!-- 文章详情内容弹窗 -->
+    <el-dialog
+      v-model="dialogVisible"
+      width="1000px"
+      style="padding: 0 35px 20px; margin-top: 10px; margin-bottom: 10px"
+    >
+      <div class="post-header">
+        <h2>{{ selectedPost?.title }}</h2>
+        <div class="post-meta">
+          <p>发布时间：{{ selectedPost?.date }}</p>
+        </div>
+      </div>
+      <!-- 轮播图 -->
+      <!-- <el-carousel
+        v-if="selectedPost?.imageList && selectedPost?.imageList.length > 0"
+        height="400px"
+        :interval="4000"
+        indicator-position="outside"
+      >
+        <el-carousel-item
+          v-for="(image, index) in selectedPost.imageList"
+          :key="index"
+          class="carousel-item"
+        >
+          <el-image :src="image.imageUrl" fit="contain" class="carousel-image" />
+        </el-carousel-item>
+      </el-carousel> -->
+      <div class="post-content">
+        <h2>内容详情：</h2>
+        <div class="rich-text" v-html="selectedPost?.content" />
+      </div>
+      <template #footer>
+        <el-button type="primary" @click="dialogVisible = false">关闭</el-button>
+      </template>
+    </el-dialog>
   </div>
 </template>
 
 <script setup lang="ts">
 defineOptions({
-  name: "AppUserProfile",
+  name: "AppNews",
   inheritAttrs: false,
 });
 
-import AppUserProfileAPI, {
-  AppUserProfilePageVO,
-  AppUserProfileForm,
-  AppUserProfilePageQuery,
-} from "@/api/app/app-user-profile";
-
+import AppNewsAPI, { AppNewsPageVO, AppNewsForm, AppNewsPageQuery } from "@/api/app/app-news";
+import { dayjs } from "element-plus";
 const queryFormRef = ref(ElForm);
 const dataFormRef = ref(ElForm);
-// const picUrl = ref("https://s2.loli.net/2023/05/24/yNsxFC8rLHMZQcK.jpg");
 
 const loading = ref(false);
 const removeIds = ref<number[]>([]);
 const total = ref(0);
-const type = ref(false);
-const queryParams = reactive<AppUserProfilePageQuery>({
+
+const queryParams = reactive<AppNewsPageQuery>({
   pageNum: 1,
   pageSize: 10,
 });
 
-// 用户个人信息表格数据
-const pageData = ref<AppUserProfilePageVO[]>([]);
+// 校园新闻资讯表格数据
+const pageData = ref<AppNewsPageVO[]>([]);
 
 // 弹窗
 const dialog = reactive({
   title: "",
   visible: false,
 });
+// 审核内容弹窗
+const dialogVisible = ref(false);
+const selectedPost = ref<AppNewsPageVO>({});
+// 查看详情
+const viewDetails = (post: AppNewsPageVO) => {
+  selectedPost.value = post;
+  dialogVisible.value = true;
+};
+// 校园新闻资讯表单数据
+const formData = reactive<AppNewsForm>({});
 
-// 用户个人信息表单数据
-const formData = reactive<AppUserProfileForm>({});
-
-// 用户个人信息表单校验规则
+// 校园新闻资讯表单校验规则
 const rules = reactive({
-  // id: [{ required: true, message: "请输入主键，自增", trigger: "blur" }],
-  studentId: [{ required: true, message: "请输入学号，关联到 app_user 表的学号", trigger: "blur" }],
+  id: [{ required: true, message: "请输入", trigger: "blur" }],
 });
+// 格式化日期时间
 
-/** 查询用户个人信息 */
+const formatDate = (date: Date | undefined) => {
+  if (!date) return "";
+  return dayjs(date).format("YYYY-MM-DD HH:mm:ss");
+};
+/** 查询校园新闻资讯 */
 function handleQuery() {
   loading.value = true;
-  AppUserProfileAPI.getPage(queryParams)
+  AppNewsAPI.getPage(queryParams)
     .then((data) => {
       pageData.value = data.list;
       total.value = data.total;
@@ -222,7 +214,7 @@ function handleQuery() {
     });
 }
 
-/** 重置用户个人信息查询 */
+/** 重置校园新闻资讯查询 */
 function handleResetQuery() {
   queryFormRef.value!.resetFields();
   queryParams.pageNum = 1;
@@ -234,29 +226,27 @@ function handleSelectionChange(selection: any) {
   removeIds.value = selection.map((item: any) => item.id);
 }
 
-/** 打开用户个人信息弹窗 */
+/** 打开校园新闻资讯弹窗 */
 function handleOpenDialog(id?: number) {
   dialog.visible = true;
   if (id) {
-    type.value = true;
-    dialog.title = "修改用户个人信息";
-    AppUserProfileAPI.getFormData(id).then((data) => {
+    dialog.title = "修改校园新闻资讯";
+    AppNewsAPI.getFormData(id).then((data) => {
       Object.assign(formData, data);
     });
   } else {
-    type.value = false;
-    dialog.title = "新增用户个人信息";
+    dialog.title = "新增校园新闻资讯";
   }
 }
 
-/** 提交用户个人信息表单 */
+/** 提交校园新闻资讯表单 */
 function handleSubmit() {
   dataFormRef.value.validate((valid: any) => {
     if (valid) {
       loading.value = true;
       const id = formData.id;
       if (id) {
-        AppUserProfileAPI.update(id, formData)
+        AppNewsAPI.update(id, formData)
           .then(() => {
             ElMessage.success("修改成功");
             handleCloseDialog();
@@ -264,7 +254,7 @@ function handleSubmit() {
           })
           .finally(() => (loading.value = false));
       } else {
-        AppUserProfileAPI.add(formData)
+        AppNewsAPI.add(formData)
           .then(() => {
             ElMessage.success("新增成功");
             handleCloseDialog();
@@ -276,7 +266,7 @@ function handleSubmit() {
   });
 }
 
-/** 关闭用户个人信息弹窗 */
+/** 关闭校园新闻资讯弹窗 */
 function handleCloseDialog() {
   dialog.visible = false;
   dataFormRef.value.resetFields();
@@ -284,7 +274,7 @@ function handleCloseDialog() {
   formData.id = undefined;
 }
 
-/** 删除用户个人信息 */
+/** 删除校园新闻资讯 */
 function handleDelete(id?: number) {
   const ids = [id || removeIds.value].join(",");
   if (!ids) {
@@ -299,7 +289,7 @@ function handleDelete(id?: number) {
   }).then(
     () => {
       loading.value = true;
-      AppUserProfileAPI.deleteByIds(ids)
+      AppNewsAPI.deleteByIds(ids)
         .then(() => {
           ElMessage.success("删除成功");
           handleResetQuery();
@@ -316,11 +306,24 @@ onMounted(() => {
   handleQuery();
 });
 </script>
-<style lang="scss" scoped>
-.center-content {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  height: 100%; // 让它充满 `el-table-column`
+
+<style scoped lang="scss">
+.rich-text {
+  margin-top: 10px;
+  font-size: 15px;
+  line-height: 1.6;
+  white-space: pre-wrap; /* 保留换行符 */
+}
+
+.rich-text table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.rich-text th,
+.rich-text td {
+  padding: 6px;
+  text-align: center;
+  border: 1px solid #ccc;
 }
 </style>

@@ -148,6 +148,7 @@ function connectWebSocket() {
 
       stompClient.subscribe("/user/queue/greeting", (res: any) => {
         const messageData = JSON.parse(res.body) as MessageType;
+        console.log("接收到点对点消息：", messageData);
         messages.value.push({
           sender: messageData.sender,
           content: messageData.content,

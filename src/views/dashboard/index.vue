@@ -18,7 +18,7 @@
           </div>
         </el-col>
 
-        <el-col :span="6" :xs="24">
+        <!-- <el-col :span="6" :xs="24">
           <el-row class="h-80px flex-y-center" :gutter="10">
             <el-col :span="10">
               <div class="font-bold color-#ff9a2e text-sm flex-y-center">
@@ -75,7 +75,7 @@
               </div>
             </el-col>
           </el-row>
-        </el-col>
+        </el-col> -->
       </el-row>
     </el-card>
 

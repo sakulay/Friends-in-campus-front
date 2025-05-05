@@ -2,7 +2,7 @@
 <!-- eslint-disable prettier/prettier -->
 <template>
   <div class="app-container">
-    <div class="search-bar">
+    <!-- <div class="search-bar">
       <el-form ref="queryFormRef" :model="queryParams" :inline="true">
         <el-form-item>
           <el-button type="primary" @click="handleQuery">
@@ -15,7 +15,7 @@
           </el-button>
         </el-form-item>
       </el-form>
-    </div>
+    </div> -->
 
     <el-card shadow="never">
       <div class="mb-10px">
@@ -63,6 +63,7 @@
                 :getFormData="AppUserAPI.getFormData"
                 :fieldNames="fieldNames"
                 :deleteUrl="scope.row.deleteUrl"
+                :style="{ width: '300px', height: '130px' }"
               />
             </div>
           </template>
