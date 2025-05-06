@@ -14,7 +14,7 @@
             <el-form-item label="关键字" prop="keywords">
               <el-input
                 v-model="queryParams.keywords"
-                placeholder="用户名/昵称/手机号"
+                placeholder="用户名/昵称"
                 clearable
                 style="width: 200px"
                 @keyup.enter="handleQuery"
@@ -100,7 +100,7 @@
               </template>
             </el-table-column>
             <!-- <el-table-column label="部门" width="120" align="center" prop="deptName" /> -->
-            <el-table-column label="手机号码" align="center" prop="mobile" width="120" />
+            <!-- <el-table-column label="手机号码" align="center" prop="mobile" width="120" /> -->
             <el-table-column label="状态" align="center" prop="status" width="80">
               <template #default="scope">
                 <el-tag :type="scope.row.status == 1 ? 'success' : 'info'">
@@ -176,20 +176,9 @@
           <el-input v-model="formData.nickname" placeholder="请输入用户昵称" />
         </el-form-item>
 
-        <el-form-item label="所属部门" prop="deptId">
-          <el-tree-select
-            v-model="formData.deptId"
-            placeholder="请选择所属部门"
-            :data="deptOptions"
-            filterable
-            check-strictly
-            :render-after-expand="false"
-          />
-        </el-form-item>
-
-        <el-form-item label="性别" prop="gender">
+        <!-- <el-form-item label="性别" prop="gender">
           <Dict v-model="formData.gender" code="gender" />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="角色" prop="roleIds">
           <el-select v-model="formData.roleIds" multiple placeholder="请选择">
@@ -202,13 +191,13 @@
           </el-select>
         </el-form-item>
 
-        <el-form-item label="手机号码" prop="mobile">
+        <!-- <el-form-item label="手机号码" prop="mobile">
           <el-input v-model="formData.mobile" placeholder="请输入手机号码" maxlength="11" />
         </el-form-item>
 
         <el-form-item label="邮箱" prop="email">
           <el-input v-model="formData.email" placeholder="请输入邮箱" maxlength="50" />
-        </el-form-item>
+        </el-form-item> -->
 
         <el-form-item label="状态" prop="status">
           <el-switch
@@ -356,7 +345,8 @@ function hancleResetPassword(row: UserPageVO) {
 async function handleOpenDialog(id?: number) {
   dialog.visible = true;
   // 加载角色下拉数据源
-  roleOptions.value = await RoleAPI.getOptions();
+  roleOptions.value = (await RoleAPI.getOptions()).filter((option) => option.label !== "学生");
+
   // 加载部门下拉数据源
   deptOptions.value = await DeptAPI.getOptions();
 

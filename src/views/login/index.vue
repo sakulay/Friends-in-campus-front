@@ -33,11 +33,8 @@
                 <el-dropdown-item @click="setLoginCredentials('root', '123456')">
                   超级管理员：root/123456
                 </el-dropdown-item>
-                <el-dropdown-item @click="setLoginCredentials('admin', '123456')">
-                  系统管理员：admin/123456
-                </el-dropdown-item>
-                <el-dropdown-item @click="setLoginCredentials('test', '123456')">
-                  测试小游客：test/123456
+                <el-dropdown-item @click="setLoginCredentials('yuyu', '123456')">
+                  yuyu: admin/123456
                 </el-dropdown-item>
               </el-dropdown-menu>
             </template>
@@ -100,16 +97,7 @@
           </div>
         </el-form-item>
 
-        <div class="flex-x-between w-full py-1">
-          <el-checkbox>
-            {{ $t("login.rememberMe") }}
-          </el-checkbox>
-
-          <el-link type="primary" href="/forget-password">
-            {{ $t("login.forgetPassword") }}
-          </el-link>
-        </div>
-
+        <div style="height: 10px" />
         <!-- 登录按钮 -->
         <el-button
           :loading="loading"
@@ -120,27 +108,11 @@
         >
           {{ $t("login.login") }}
         </el-button>
-
-        <!-- 第三方登录 -->
-        <el-divider>
-          <el-text size="small">{{ $t("login.otherLoginMethods") }}</el-text>
-        </el-divider>
-        <div class="third-party-login">
-          <svg-icon icon-class="wechat" class="icon" />
-          <svg-icon icon-class="qq" class="icon" />
-          <svg-icon icon-class="github" class="icon" />
-          <svg-icon icon-class="gitee" class="icon" />
-        </div>
       </el-form>
     </div>
 
     <!-- 登录页底部 -->
-    <div class="login-footer">
-      <el-text size="small">
-        Copyright © 2021 - 2025 youlai.tech All Rights Reserved.
-        <a href="http://beian.miit.gov.cn/" target="_blank">皖ICP备20006496号-2</a>
-      </el-text>
-    </div>
+    <div class="login-footer" />
   </div>
 </template>
 
@@ -172,8 +144,8 @@ const isCapslock = ref(false); // 是否大写锁定
 const captchaBase64 = ref(); // 验证码图片Base64字符串
 
 const loginData = ref<LoginData>({
-  username: "admin",
-  password: "123456",
+  username: "",
+  password: "",
   captchaKey: "",
   captchaCode: "",
 });

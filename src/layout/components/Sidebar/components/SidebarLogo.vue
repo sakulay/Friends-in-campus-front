@@ -2,7 +2,7 @@
   <div class="logo">
     <transition name="el-fade-in-linear" mode="out-in">
       <router-link :key="+collapse" class="wh-full flex-center" to="/">
-        <img :src="logo" class="w20px h20px" />
+        <img :src="'http://111.230.102.82:40061/i/2025/05/05/zoz1aj.png'" class="w20px h20px" />
         <span v-if="!collapse" class="title">
           {{ defaultSettings.title }}
         </span>

@@ -17,65 +17,6 @@
             </div>
           </div>
         </el-col>
-
-        <!-- <el-col :span="6" :xs="24">
-          <el-row class="h-80px flex-y-center" :gutter="10">
-            <el-col :span="10">
-              <div class="font-bold color-#ff9a2e text-sm flex-y-center">
-                <el-icon class="mr-2px"><Folder /></el-icon>
-                仓库
-              </div>
-              <div class="mt-3">
-                <el-link href="https://gitee.com/youlaiorg/vue3-element-admin" target="_blank">
-                  <SvgIcon icon-class="gitee" class="text-lg color-#f76560" />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link href="https://github.com/youlaitech/vue3-element-admin" target="_blank">
-                  <SvgIcon icon-class="github" class="text-lg color-#4080ff" />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link href="https://gitcode.com/youlai/vue3-element-admin" target="_blank">
-                  <SvgIcon icon-class="gitcode" class="text-lg color-#ff9a2e" />
-                </el-link>
-              </div>
-            </el-col>
-
-            <el-col :span="10">
-              <div class="font-bold color-#4080ff text-sm flex-y-center">
-                <el-icon class="mr-2px"><Document /></el-icon>
-                文档
-              </div>
-              <div class="mt-3">
-                <el-link href="https://juejin.cn/post/7228990409909108793" target="_blank">
-                  <SvgIcon icon-class="juejin" class="text-lg" />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link
-                  href="https://youlai.blog.csdn.net/article/details/130191394"
-                  target="_blank"
-                >
-                  <SvgIcon icon-class="csdn" class="text-lg" />
-                </el-link>
-                <el-divider direction="vertical" />
-                <el-link href="https://www.cnblogs.com/haoxianrui/p/17331952.html" target="_blank">
-                  <SvgIcon icon-class="cnblogs" class="text-lg" />
-                </el-link>
-              </div>
-            </el-col>
-
-            <el-col :span="4">
-              <div class="font-bold color-#f76560 text-sm flex-y-center">
-                <el-icon class="mr-2px"><VideoCamera /></el-icon>
-                视频
-              </div>
-              <div class="mt-3">
-                <el-link href="https://www.bilibili.com/video/BV1eFUuYyEFj" target="_blank">
-                  <SvgIcon icon-class="bilibili" class="text-lg" />
-                </el-link>
-              </div>
-            </el-col>
-          </el-row>
-        </el-col> -->
       </el-row>
     </el-card>
 
